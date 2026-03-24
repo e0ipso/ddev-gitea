@@ -1,6 +1,11 @@
 name: gitea
 
 project_files:
+  - web-build/Dockerfile.gitea
+  - config.gitea.yaml
   - docker-compose.gitea.yaml
+
+post_install_actions:
+  - "echo 'Please run 'ddev restart' to build the new configuration.'"
 
 ddev_version_constraint: '>= v1.24.3'

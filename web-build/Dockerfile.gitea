@@ -1,0 +1,22 @@
+#ddev-generated
+ARG BASE_IMAGE
+FROM $BASE_IMAGE
+
+# Download the latest tea CLI binary from Gitea releases.
+# Install to /usr/local/lib/tea/ — outside the web user's home directory,
+# which DDEV mounts as a Docker named volume at runtime (masking image layers).
+# A post-start hook (config.gitea.yaml) copies the binary into ~/.local/bin/tea
+# on first start so it is user-owned and on the volume.
+RUN TEA_VERSION=$(curl -fsSL "https://gitea.com/gitea/tea/releases/latest" \
+      -o /dev/null -w '%{url_effective}' | grep -oP 'v[\d.]+$') && \
+    TEA_BARE_VERSION=$(echo "$TEA_VERSION" | sed 's/^v//') && \
+    curl -fsSL -o /usr/local/lib/tea \
+      "https://gitea.com/gitea/tea/releases/download/${TEA_VERSION}/tea-${TEA_BARE_VERSION}-linux-amd64" && \
+    chmod 755 /usr/local/lib/tea
+
+# Add ~/.local/bin to PATH for non-interactive shells (ddev exec).
+# ddev exec uses non-login bash (BASH_ENV=/etc/bash.nointeractive.bashrc),
+# which sources /etc/bashrc/*.bashrc — not /etc/profile.d/.
+RUN mkdir -p /etc/bashrc && \
+    printf 'export PATH="$HOME/.local/bin:$PATH"\n' \
+    > /etc/bashrc/gitea.bashrc

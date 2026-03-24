@@ -1,0 +1,15 @@
+#ddev-generated
+hooks:
+  pre-start:
+    # Ensure host-side tea config directory exists so Docker bind-mounts it as a
+    # directory (not a file). Without this, Docker would create a directory at the
+    # config.yml path, breaking the mount.
+    - exec-host: "mkdir -p ~/.config/tea && touch ~/.config/tea/config.yml"
+  post-start:
+    # Copy the tea binary from the image layer into the user-owned volume.
+    - exec: "mkdir -p ~/.local/bin && [ -f ~/.local/bin/tea ] || cp /usr/local/lib/tea ~/.local/bin/tea"
+    # Ensure ~/.local/bin is on PATH for interactive shells (ddev ssh).
+    - exec: "grep -qF '.local/bin' ~/.bashrc 2>/dev/null || printf '\\nexport PATH=\"$HOME/.local/bin:$PATH\"' >> ~/.bashrc"
+    # Fix ownership of ~/.config/tea — Docker bind-mounts may create the parent
+    # directory as root.
+    - exec: "[ -d ~/.config/tea ] && sudo chown -R $(id -u):$(id -g) ~/.config/tea || true"

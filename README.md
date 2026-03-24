@@ -7,7 +7,9 @@
 
 ## Overview
 
-This add-on integrates Gitea into your [DDEV](https://ddev.com/) project.
+This add-on installs the [tea CLI](https://gitea.com/gitea/tea) into your [DDEV](https://ddev.com/) web container, giving you command-line access to Gitea servers from inside your project.
+
+It downloads the latest `tea` binary during image build, places it on the container's PATH, and bind-mounts your host `~/.config/tea/config.yml` so that your Gitea server logins and credentials are available inside the container.
 
 ## Installation
 
@@ -22,26 +24,24 @@ After installation, make sure to commit the `.ddev` directory to version control
 
 | Command | Description |
 | ------- | ----------- |
-| `ddev describe` | View service status and used ports for Gitea |
-| `ddev logs -s gitea` | Check Gitea logs |
+| `ddev exec tea login list` | List configured Gitea server logins |
+| `ddev exec tea repos ls` | List repositories on your default Gitea server |
+| `ddev exec tea issues ls` | List issues in the current repository |
+| `ddev ssh` then `tea` | Use tea interactively inside the container |
 
-## Advanced Customization
+## Host Configuration
 
-To change the Docker image:
+The add-on mounts `~/.config/tea/config.yml` from your host into the container. To set up tea on your host first:
 
 ```bash
-ddev dotenv set .ddev/.env.gitea --gitea-docker-image="ddev/ddev-utilities:latest"
-ddev add-on get e0ipso/ddev-gitea
-ddev restart
+# Install tea on your host (if not already installed)
+# See https://gitea.com/gitea/tea/releases
+
+# Add a Gitea server login
+tea login add --name my-server --url https://your-gitea.example.com --token YOUR_TOKEN
 ```
 
-Make sure to commit the `.ddev/.env.gitea` file to version control.
-
-All customization options (use with caution):
-
-| Variable | Flag | Default |
-| -------- | ---- | ------- |
-| `GITEA_DOCKER_IMAGE` | `--gitea-docker-image` | `ddev/ddev-utilities:latest` |
+Once configured on the host, the same logins will be available inside the DDEV container.
 
 ## Credits
 
