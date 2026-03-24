@@ -42,7 +42,7 @@ health_checks() {
   # Verify that the tea binary is installed and on the PATH.
   run ddev exec tea --version
   assert_success
-  assert_output --partial "tea version"
+  assert_output --partial "Version:"
 }
 
 teardown() {
